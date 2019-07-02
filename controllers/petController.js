@@ -86,6 +86,47 @@ router.post('/new', async (req, res) => {
 	}
 })
 
+// Pet Put Route 
+router.put('/:id/update', async (req, res) => {
+	if(req.session.logged) {
+		try {
+			const updatedPet = {};
+			updatedPet.firstName = req.body.firstName;
+			updatedPet.middleName = req.body.middleName;
+			updatedPet.lastName = req.body.lastName;
+			updatedPet.weight = req.body.weight;
+			updatedPet.age = req.body.age;
+			updatedPet.peopleSkills = req.body.peopleSkills;
+			updatedPet.dogSkills = req.body.dogSkills;
+			updatedPet.favTreat = req.body.favTreat;
+			updatedPet.favToy = req.body.favToy;
+			updatedPet.favPlay = req.body.favPlay;
+			updatedPet.breed = req.body.breed;
+			updatedPet.fixed = req.body.fixed;
+			updatedPet.owner = req.session.username;
+			updatedPet.bio = req.body.bio;
+			updatedPet.sex = req.body.sex;
+			updatedPet._id = req.params.id;
 
+			const petToUpdate = await Pet.findByIdAndUpdate(req.params.id, updatedPet, {new: true});
+			await petToUpdate.save();
+			const foundUser = await User.find({username: req.session.username});
+			const updatedUser = foundUser[0];
+			updatedUser.pet.splice(updatedUser.pet.findIndex((pet) => {
+				return pet.id === petToUpdate.id
+			}), 1, petToUpdate);
+			await updatedUser.save()
+			res.json({
+				status: 200,
+				data: updatedUser
+			})
+		} catch(err) {
+			res.json({
+				status: 400,
+				data: err
+			})
+		}
+	}
+})
 
 module.exports = router;
