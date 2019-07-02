@@ -3,7 +3,7 @@ const router 	= express.Router();
 const User 		= require('../models/user');
 const Pet 		= require('../models/pet');
 
-// Pet Get Route
+// Pet Get Route for all pets
 
 router.get('/', async (req, res) => {
 	if(req.session.logged) {
@@ -17,6 +17,32 @@ router.get('/', async (req, res) => {
 			res.json({
 				status: 200,
 				data: foundUser
+			})
+		}
+	}
+})
+
+// Pet Get Route for specific pet
+router.get('/:id', async (req, res) => {
+	if(req.session.logged) {
+		const noPets = 'There are no pets list under that ID'
+		try {
+			const foundPet = await Pet.findById(req.params.id);
+			if(!foundPet) {
+				res.json({
+					status: 204,
+					data: noPets
+				})
+			} else {
+				res.json({
+					status: 200,
+					data: foundPet
+				})
+			}
+		} catch(err) {
+			res.json({
+				status: 400,
+				data: err
 			})
 		}
 	}
