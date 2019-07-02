@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const Comment = require('./comment');
 
 const postSchema = new mongoose.Schema({
+	postTitle: {
+		type: String,
+		require: true
+	},
 	postBody: {
 		type: String,
 		require: true
