@@ -222,7 +222,7 @@ router.put('/:id/update', async (req, res, next) => {
 			
 			// Logic to handle bio change
 			if(!req.params.bio) {
-				if(currentPet.bio === "") {
+				if(!currentPet.bio) {
 					updatedPet.bio = `Tell us a bit about, ${currentPet.firstName}.`
 				} else {
 					updatedPet.bio = currentPet.bio;
