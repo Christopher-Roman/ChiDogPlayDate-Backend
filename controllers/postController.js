@@ -64,6 +64,7 @@ router.post('/new', async (req, res) => {
 			}
 		} catch(err) {
 			res.json({
+				status: 500,
 				data: err
 			})
 		}
@@ -76,6 +77,31 @@ router.post('/new', async (req, res) => {
 	}
 })
 
+// Post Put Route
+router.put('/:id/update', async (req, res, next) => {
+	if(req.session.logged) {
+		try {
+			const foundUser = await User.findOne({username: req.session.username})
+			const updatedPostEntry = {};
+			updatedPostEntry.postTitle = req.body.postTitle;
+			updatedPostEntry.postBody = req.body.postBody;
+			updatedPostEntry._id = req.params.id
 
+			const postToUpdate = await Post.findByIdAndUpdate(req.params.id, updatedPostEntry, {new: true});
+			await postToUpdate.save();
+			let updatedUser = foundUser;
+			updatedUser.post.splice(updatedUser.post.findIndex((post) => {
+				return post.id === postToUpdate.id
+			}), 1, postToUpdate)
+			await updatedUser.save()
+			res.json({
+				status: 200,
+				data: updatedUser
+			})
+		} catch(err) {
+			next(err)
+		}
+	}
+})
 
 module.exports = router;

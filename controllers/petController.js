@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
 		if(foundUser === undefined || foundUser === null){
 			res.json({
 				status: 204,
-				data: 'No budgets have been created'
+				data: 'No information has been created'
 			})
 		} else {
 			res.json({
@@ -41,7 +41,7 @@ router.get('/:id', async (req, res) => {
 			}
 		} catch(err) {
 			res.json({
-				status: 400,
+				status: 500,
 				data: err
 			})
 		}
@@ -79,7 +79,7 @@ router.post('/new', async (req, res) => {
 			})
 		} catch(err) {
 			res.json({
-				status: 400,
+				status: 500,
 				data: err
 			})
 		}
@@ -122,7 +122,7 @@ router.put('/:id/update', async (req, res) => {
 			})
 		} catch(err) {
 			res.json({
-				status: 400,
+				status: 500,
 				data: err
 			})
 		}
