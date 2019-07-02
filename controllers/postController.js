@@ -82,9 +82,23 @@ router.put('/:id/update', async (req, res, next) => {
 	if(req.session.logged) {
 		try {
 			const foundUser = await User.findOne({username: req.session.username})
+			const currentPost = await Post.findById(req.params.id)
 			const updatedPostEntry = {};
-			updatedPostEntry.postTitle = req.body.postTitle;
-			updatedPostEntry.postBody = req.body.postBody;
+
+			// Logic for title update
+			if(!req.body.postTitle) {
+				updatedPostEntry.postTitle = currentPost.postTitle;
+			} else {
+				updatedPostEntry.postTitle = req.body.postTitle;
+			}
+
+			// Logic for body update
+			if(!req.body.postBody) {
+				updatedPostEntry.postBody = currentPost.postBody
+			} else {
+				updatedPostEntry.postTitle = req.body.postbody;
+			}
+
 			updatedPostEntry._id = req.params.id
 
 			const postToUpdate = await Post.findByIdAndUpdate(req.params.id, updatedPostEntry, {new: true});
