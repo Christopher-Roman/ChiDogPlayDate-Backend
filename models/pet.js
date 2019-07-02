@@ -17,7 +17,8 @@ const petSchema = new mongoose.Schema({
 	breed: String,
 	fixed: String,
 	owner: String,
-	bio: String
+	bio: String,
+	sex: String
 })
 
 module.exports = mongoose.model('Pet', petSchema)
