@@ -124,6 +124,32 @@ router.put('/:id/update', async (req, res, next) => {
 	}
 })
 
+// Delete Route for Posts
+router.delete('/delete/:id', async (req, res, next) => {
+	try {
+		const currentUser = await User.findOne({username: req.session.username});
+		currentUser.post.splice(currentUser.post.findIndex((post) => {
+			return post.id === req.params.id
+		}), 1)
+		const foundPost = await Post.findById(req.params.id);
+		let deletedCommentIds = [];
+		for(let i = 0; i < foundPost.comment.length; i++) {
+			deletedCommentIds.push(foundPost.comment[i].id);
+		}
+		const deletedPost = await Post.findByIdAndDelete(req.params.id);
+		const deletedComments = await Comment.deleteMany({
+			_id: {$in: deletedCommentIds}
+		})
+		await currentUser.save()
+		res.json({
+			status: 200,
+			data: currentUser
+		})
+	} catch(err) {
+		next(err)
+	}
+})
+
 //============================================================//
 //															  //
 //		These are the routes for Comments's specifically      //
