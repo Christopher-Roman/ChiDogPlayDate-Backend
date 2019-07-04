@@ -195,7 +195,23 @@ router.put('/:id/comment/:index/edit', async (req, res, next) => {
 	}
 })
 
-
+// Delete Route for Comments
+router.delete('/:id/comment/:index/delete', async (req, res, next) => {
+	try {
+		const deletedComment = await Comment.findByIdAndRemove(req.params.index);
+		const currentPost = await Post.findById(req.params.id);
+		currentPost.comment.splice(currentPost.comment.findIndex((comment) => {
+			return comment.id === req.params.index
+		}), 1);
+		await currentPost.save()
+		res.json({
+			status: 200,
+			data: currentPost
+		})
+	} catch(err) {
+		next(err)
+	}
+})
 
 
 
