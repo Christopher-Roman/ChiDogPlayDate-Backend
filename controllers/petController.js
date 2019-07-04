@@ -263,4 +263,22 @@ router.put('/:id/update', async (req, res, next) => {
 	}
 })
 
+// Delete Route for Pets
+router.delete('/delete/:id', async (req, res, next) => {
+	try {
+		const currentUser = await User.findOne({username: req.session.username});
+		currentUser.pet.splice(currentUser.pet.findIndex((pet) => {
+			return pet.id === req.params.id
+		}), 1)
+		await currentUser.save()
+		const deletedPet = await Pet.findByIdAndDelete(req.params.id);
+		res.json({
+			status: 200,
+			data: currentUser
+		})
+	} catch(err) {
+		next(err)
+	}
+})
+
 module.exports = router;
