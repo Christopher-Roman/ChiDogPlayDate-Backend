@@ -4,6 +4,12 @@ const User 		= require('../models/user');
 const Post 		= require('../models/post');
 const Comment 	= require('../models/comment');
 
+//============================================================//
+//															  //
+//		These are the routes for Post's specifically          //
+//															  //
+//============================================================//
+
 // Post Get Route for all posts
 router.get('/', async (req, res) => {
 	if(req.session.logged) {
@@ -23,7 +29,7 @@ router.get('/', async (req, res) => {
 })
 
 // Post Get Route for specific post
-router.get(':id', async (req, res) => {
+router.get('/:id', async (req, res) => {
 	if(req.session.logged) {
 		const noPost = 'There is no post under that ID'
 		const foundPost = await Post.findById(req.params.id);
@@ -117,5 +123,56 @@ router.put('/:id/update', async (req, res, next) => {
 		}
 	}
 })
+
+//============================================================//
+//															  //
+//		These are the routes for Comments's specifically      //
+//															  //
+//============================================================//
+
+
+// Post Route for Comments
+
+router.post('/:id/comment/new', async (req, res, next) => {
+	if(req.session.logged) {
+		try {
+			const foundPost = await Post.findById(req.params.id);
+			const commentToAdd = {}
+			commentToAdd.commentBody = req.body.commentBody;
+			commentToAdd.createdBy = req.session.username;
+			if(req.body.photo != "") {
+				commentToAdd.photo = req.body.photo
+			} else {
+				commentToAdd.photo = null
+			}
+
+			const newComment = await Comment.create(commentToAdd);
+			foundPost.comment.push(newComment)
+			await foundPost.save()
+			res.json({
+				status: 200,
+				data: foundPost
+			})
+		} catch(err) {
+			next(err)
+		}
+	} else {
+		res.json({
+			status: 400,
+			data: 'You must be logged in to perform this action'
+		})
+	}
+})
+
+
+
+
+
+
+
+
+
+
+
 
 module.exports = router;

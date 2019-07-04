@@ -12,7 +12,8 @@ const commentSchema = new mongoose.Schema({
 	createdBy: {
 		type: String,
 		require: true
-	}
+	},
+	photo: String
 })
 
 module.exports = mongoose.model('Comment', commentSchema)
