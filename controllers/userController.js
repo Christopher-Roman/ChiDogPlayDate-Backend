@@ -4,6 +4,7 @@ const User 		= require('../models/user');
 const Pet 		= require('../models/pet');
 const Post 		= require('../models/post');
 const Photo 	= require('../models/photo');
+const Comment 	= require('../models/comment')
 const bcrypt 	= require('bcrypt')
 
 // Register Post Route for User Creation
@@ -152,6 +153,74 @@ router.put('/:id/update', async (req, res) => {
 		res.json({
 			status: 400,
 			data: 'You must be logged in to utilize this functionality'
+		})
+	}
+})
+
+
+// Delete Route for User
+router.delete('/delete', async (req, res, next) => {
+	const deleteConfirm = req.session.username.toUpperCase()
+	if(req.body.confirmDelete === deleteConfirm) {
+		try {
+			const currentUser = await User.findOne({username: req.session.username});
+			const allUserComments = await Comment.find({createdBy: req.session.username});
+			console.log(allUserComments);
+			// console.log(currentUser);
+			const petIds = [];
+			const postIds = [];
+			const photoIds = [];
+			const commentIds = [];
+			// Collecting all of the pet IDs that this user has created
+			for(let i = 0; i < currentUser.pet.length; i++) {
+				petIds.push(currentUser.pet[i].id)
+			}
+			// Collecting all of the post IDs the user has created
+			for(let j = 0; j < currentUser.post.length; j++) {
+				postIds.push(currentUser.post[j].id)
+			}
+			// Collecting all of the photo IDs the user has created
+			// for(let k = 0; k < currentUser.photo.length; k++) {
+			// 	photoIds.push(currentUser.photo[k].id)
+			// }
+			// Collecting all of the comment IDs the user has created
+			for(let l = 0; l < allUserComments.length; l++) {
+				commentIds.push(allUserComments[l].id)
+			}
+
+			// Deleting current user
+			const deleteUser = await User.findByIdAndDelete(currentUser.id);
+
+			// Deleting all of the user's pets
+			const deletePets = await Pet.deleteMany({
+				_id: {$in: petIds}
+			})
+
+			// Deleting all of the user's posts
+			const deletePosts = await Post.deleteMany({
+				_id: {$in: postIds}
+			})
+
+			// Deleting all of the user's photos
+			// const deletePhotos = await Photo.deleteMany({
+			// 	_id: {$in: photoIds}
+			// })
+
+			// Deleting all of the user's comments
+			const deleteComments = await Comment.deleteMany({
+				_id: {$in: allUserComments}
+			})
+			res.json({
+				status: 200,
+				data: 'You have Successfully deleted your account.'
+			})
+		} catch(err) {
+			next(err)
+		}
+	} else {
+		res.json({
+			status: 422,
+			data: 'The information entered was incorrect. Please try again.'
 		})
 	}
 })
