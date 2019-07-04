@@ -165,7 +165,35 @@ router.post('/:id/comment/new', async (req, res, next) => {
 })
 
 
+// Put Route for Comments
+router.put('/:id/comment/:index/edit', async (req, res, next) => {
+	try {
+		const currentComment = await Comment.findById(req.params.index)
+		const updatedComment = {}
+		updatedComment.commentBody = req.body.commentBody;
+		if(req.body.photo === "") {
+			updatedComment.photo = null
+		} else if(req.body.photo === currentComment.photo) {
+			updatedComment.photo = currentComment.photo
+		} else {
+			updatedComment.photo = req.body.photo
+		}
 
+		const commentToUpdate = await Comment.findByIdAndUpdate(req.params.index, updatedComment, {new: true});
+		await commentToUpdate.save()
+		const foundPost = await Post.findById(req.params.id);
+		foundPost.comment.splice(foundPost.comment.findIndex((comment) => {
+			return comment.id === commentToUpdate.id
+		}), 1, commentToUpdate)
+		await foundPost.save()
+		res.json({
+			status: 200,
+			data: foundPost
+		})
+	} catch(err) {
+		next(err)
+	}
+})
 
 
 
