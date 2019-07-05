@@ -27,8 +27,7 @@ const upload = multer({
 	fileFilter: fileFilter
 })
 
-// Photo Get Route
-
+// Get Route for all user Photos
 router.get('/', async (req, res) => {
 	if(req.session.logged) {
 		const foundPhotos = await Photo.find({createdBy: req.session.username});
@@ -47,6 +46,30 @@ router.get('/', async (req, res) => {
 	}
 })
 
+// Get Route for specific photo
+router.get('/:id', async (req, res, next) => {
+	if(req.session.logged) {
+		try {
+			noPhoto = `Photo was not found using the following ID: ${req.params.id}`
+			const foundPhoto = await Photo.findById(req.params.id);
+			if(!foundPhoto) {
+				res.json({
+					status: 204,
+					data: noPhoto
+				})
+			} else {
+				res.json({
+					status: 200,
+					data: foundPhoto
+				})
+			}
+		} catch(err) {
+			next(err)
+		}
+	}
+})
+
+// Post Route for Photos
 router.post('/new', upload.single('photoUrl'), async (req, res, next) => {
 	if(req.session.logged) {
 		try {
@@ -74,6 +97,13 @@ router.post('/new', upload.single('photoUrl'), async (req, res, next) => {
 		})
 	}
 })
+
+// Put Route for Photos
+
+
+
+
+
 
 
 module.exports = router
