@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const petSchema = new mongoose.Schema({
 	firstName: {
 		type: String,
-		require: true
+		required: true
 	},
 	middleName: String,
 	lastName: String,
@@ -18,7 +18,8 @@ const petSchema = new mongoose.Schema({
 	fixed: String,
 	owner: String,
 	bio: String,
-	sex: String
+	sex: String,
+	petPhoto: String
 })
 
 module.exports = mongoose.model('Pet', petSchema)

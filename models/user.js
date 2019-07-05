@@ -6,12 +6,12 @@ const Photo = require('./photo');
 const userSchema = new mongoose.Schema({
 	username: {
 		type: String,
-		require: true,
+		required: true,
 		unique: true
 	},
 	password: {
 		type: String,
-		require: true
+		required: true
 	},
 	creationDate: {
 		type: Date,
@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
 	address: String,
 	pet: [Pet.schema],
 	post: [Post.schema],
-	petPhoto: [Photo.schema]
+	photo: [Photo.schema]
 })
 
 module.exports = mongoose.model('User', userSchema);

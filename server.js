@@ -10,6 +10,7 @@ require('dotenv').config({path:'./.env'});
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
 
+
 const User = require('./models/user');
 const Pet = require('./models/pet');
 const Post = require('./models/post');
@@ -31,6 +32,7 @@ app.use(session({
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.use(methodOverride('_method'));
+app.use('/uploads', express.static('uploads'))
 
 const corsOptions = {
 	origin: process.env.HOST,

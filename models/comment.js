@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const commentSchema = new mongoose.Schema({
 	commentBody: {
 		type: String,
-		require: true
+		required: true
 	},
 	createdAt: {
 		type: Date,
@@ -11,7 +11,7 @@ const commentSchema = new mongoose.Schema({
 	},
 	createdBy: {
 		type: String,
-		require: true
+		required: true
 	},
 	photo: String
 })

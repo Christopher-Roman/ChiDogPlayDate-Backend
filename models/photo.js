@@ -4,7 +4,7 @@ const Comment = require('./comment');
 const photoSchema = new mongoose.Schema({
 	photoUrl: {
 		type: String,
-		require: true
+		required: true
 	},
 	createdBy: String,
 	description: String,

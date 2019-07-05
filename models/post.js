@@ -4,11 +4,11 @@ const Comment = require('./comment');
 const postSchema = new mongoose.Schema({
 	postTitle: {
 		type: String,
-		require: true
+		required: true
 	},
 	postBody: {
 		type: String,
-		require: true
+		required: true
 	},
 	createdAt: {
 		type: Date,
@@ -16,7 +16,7 @@ const postSchema = new mongoose.Schema({
 	},
 	createdBy: {
 		type: String,
-		require: true
+		required: true
 	},
 	comment: [Comment.schema]
 })
