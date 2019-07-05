@@ -2,14 +2,18 @@ const express 	= require('express');
 const router 	= express.Router();
 const User 		= require('../models/user');
 const Photo 	= require('../models/photo');
+const Comment 	= require('../models/comment')
 const multer	= require('multer');
+const fs 		= require('fs')
+const { promisify } = require('util')
+const unlinkAsync 	= promisify(fs.unlink)
 
 const storage = multer.diskStorage({
 	destination: function(req, file, callback) {
 		callback(null, './uploads/');
 	},
 	filename: function(req, file, callback) {
-		callback(null, `${Date.now()} ${file.originalname}`);
+		callback(null, `${file.originalname} - ${Date.now()}`);
 	}
 })
 const fileFilter = (req, file, callback) => {
@@ -77,6 +81,7 @@ router.post('/new', upload.single('photoUrl'), async (req, res, next) => {
 			photoEntry.photoUrl = req.file.path;
 			photoEntry.createdBy = req.session.username;
 			photoEntry.description = req.body.description;
+			photoEntry.fileName = req.file.filename
 
 			const newPhoto = await Photo.create(photoEntry);
 			const currentUser = await User.findOne({username: req.session.username});
@@ -115,6 +120,8 @@ router.put('/:id/update', upload.single('photoUrl'), async (req, res, next) => {
 			} else {
 				updatedPhoto.description = req.body.description;
 			}
+
+			await unlinkAsync('../uploads' + currentPhoto.fileName)
 			const photoWithUpdates = await Photo.findByIdAndUpdate(req.params.id, updatedPhoto, {new: true})
 			await photoWithUpdates.save()
 			const currentUser = await User.findOne({username: req.session.username});
@@ -138,7 +145,36 @@ router.put('/:id/update', upload.single('photoUrl'), async (req, res, next) => {
 	}
 })
 
-
+// Delete Route for Photos
+router.delete('/delete/:id', async (req, res, next) => {
+	try {
+		console.log(req.file);
+		const currentUser = await User.findOne({username: req.session.username});
+		currentUser.photo.splice(currentUser.photo.findIndex((photo) => {
+			return photo.id === req.params.id
+		}), 1);
+		const currentPhoto = await Photo.findById(req.params.id);
+		console.log(currentPhoto);
+		const deletedCommentIds = [];
+		if(currentPhoto.comment) {
+			for(let i = 0; i < currentPhoto.comment.length; i++) {
+				deletedCommentIds.push(currentPhoto.comment[i].id)
+			}
+		}
+		const deletePhoto = await Photo.findByIdAndDelete(req.params.id);
+		const deletedComments = await Comment.deleteMany({
+			_id: {$in: deletedCommentIds}
+		});
+		await currentUser.save()
+		await unlinkAsync(currentPhoto.photoUrl)
+		res.json({
+			status: 200,
+			data: currentUser
+		})
+	} catch(err) {
+		next(err)
+	}
+})
 
 
 

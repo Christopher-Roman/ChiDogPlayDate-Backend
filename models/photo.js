@@ -6,6 +6,7 @@ const photoSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
+	fileName: String,
 	createdBy: String,
 	description: String,
 	createdAt: {
