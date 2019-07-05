@@ -107,21 +107,21 @@ router.post('/new', upload.single('photoUrl'), async (req, res, next) => {
 router.put('/:id/update', upload.single('photoUrl'), async (req, res, next) => {
 	if(req.session.logged) {
 		try {
+			console.log(req)
 			const currentPhoto = await Photo.findById(req.params.id);
 			const updatedPhoto = {};
 			updatedPhoto.id = req.params.id
-			if(req.file.path === currentPhoto.photoUrl) {
+			if(!req.file) {
 				updatedPhoto.photoUrl = currentPhoto.photoUrl;
 			} else {
+				await unlinkAsync(currentPhoto.photoUrl)
 				updatedPhoto.photoUrl = req.file.path;
 			}
-			if(req.body.description === currentPhoto.description) {
+			if(!req.body.description) {
 				updatedPhoto.description = currentPhoto.description;
 			} else {
 				updatedPhoto.description = req.body.description;
 			}
-
-			await unlinkAsync('../uploads' + currentPhoto.fileName)
 			const photoWithUpdates = await Photo.findByIdAndUpdate(req.params.id, updatedPhoto, {new: true})
 			await photoWithUpdates.save()
 			const currentUser = await User.findOne({username: req.session.username});
