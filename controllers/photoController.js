@@ -8,6 +8,9 @@ const fs 		= require('fs')
 const { promisify } = require('util')
 const unlinkAsync 	= promisify(fs.unlink)
 
+// 403 response
+const forbidden = 'You must be logged in to perform this action.'
+
 //============================================================//
 //															  //
 //		Configuration for Multer File Uploader.               //
@@ -109,7 +112,6 @@ router.post('/new', upload.single('photoUrl'), async (req, res, next) => {
 			next(err)
 		}
 	} else {
-		const forbidden = 'You must be logged in to perform this action.'
 		res.json({
 			status: 403,
 			data: forbidden
@@ -121,7 +123,6 @@ router.post('/new', upload.single('photoUrl'), async (req, res, next) => {
 router.put('/:id/update', upload.single('photoUrl'), async (req, res, next) => {
 	if(req.session.logged) {
 		try {
-			console.log(req)
 			const currentPhoto = await Photo.findById(req.params.id);
 			const updatedPhoto = {};
 			updatedPhoto.id = req.params.id
@@ -151,7 +152,6 @@ router.put('/:id/update', upload.single('photoUrl'), async (req, res, next) => {
 			next(err)
 		}
 	} else {
-		const forbidden = 'You must be logged in to perform this action.'
 		res.json({
 			status: 403,
 			data: forbidden
@@ -239,4 +239,51 @@ router.post('/:id/comment/new', upload.single('photo'), async (req, res, next) =
 	}
 })
 
+// Put Route for Photo Comments
+router.put('/:id/comment/:index/update', upload.single('photo'), async (req, res, next) => {
+	if(req.session.logged) {
+		try {
+			const currentPhoto = await Photo.findById(req.params.id);
+			const commentToUpdate = await Comment.findById(req.params.index);
+			const updatedCommentInfo = {};
+			console.log(commentToUpdate);
+			if(!req.body.commentBody) {
+				updatedCommentInfo.commentBody = commentToUpdate.commentBody;
+			} else {
+				updatedCommentInfo.commentBody = req.body.commentBody;
+			}
+			if(!req.file) {
+				if(!commentToUpdate.photo) {
+					updatedCommentInfo.photo = null
+				} else {
+					updatedCommentInfo.photo = commentToUpdate.photo
+				}
+			} else {
+				if(!commentToUpdate.photo) {
+					updatedCommentInfo.photo = req.file.path;
+				} else {
+					await unlinkAsync(commentToUpdate.photo)
+					updatedCommentInfo.photo = req.file.path;
+				}
+			}
+			const updatedComment = await Comment.findByIdAndUpdate(req.params.index, updatedCommentInfo, {new: true})
+			await updatedComment.save()
+			currentPhoto.comment.splice(currentPhoto.comment.findIndex((comment) => {
+				return comment.id === req.params.index
+			}), 1, updatedComment);
+			await currentPhoto.save();
+			res.send({
+				status: 200,
+				data: currentPhoto
+			})
+		} catch(err) {
+			next(err)
+		}
+	} else {
+		res.json({
+			status: 403,
+			data: forbidden
+		})
+	}
+})
 module.exports = router
