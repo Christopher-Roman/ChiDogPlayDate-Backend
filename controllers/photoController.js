@@ -99,7 +99,44 @@ router.post('/new', upload.single('photoUrl'), async (req, res, next) => {
 })
 
 // Put Route for Photos
-
+router.put('/:id/update', upload.single('photoUrl'), async (req, res, next) => {
+	if(req.session.logged) {
+		try {
+			const currentPhoto = await Photo.findById(req.params.id);
+			const updatedPhoto = {};
+			updatedPhoto.id = req.params.id
+			if(req.file.path === currentPhoto.photoUrl) {
+				updatedPhoto.photoUrl = currentPhoto.photoUrl;
+			} else {
+				updatedPhoto.photoUrl = req.file.path;
+			}
+			if(req.body.description === currentPhoto.description) {
+				updatedPhoto.description = currentPhoto.description;
+			} else {
+				updatedPhoto.description = req.body.description;
+			}
+			const photoWithUpdates = await Photo.findByIdAndUpdate(req.params.id, updatedPhoto, {new: true})
+			await photoWithUpdates.save()
+			const currentUser = await User.findOne({username: req.session.username});
+			currentUser.photo.splice(currentUser.photo.findIndex((photo) => {
+				return photo.id === req.params.id
+			}), 1, photoWithUpdates)
+			await currentUser.save()
+			res.json({
+				status: 200,
+				data: photoWithUpdates
+			})
+		} catch(err) {
+			next(err)
+		}
+	} else {
+		const forbidden = 'You must be logged in to perform this action.'
+		res.json({
+			status: 403,
+			data: forbidden
+		})
+	}
+})
 
 
 
