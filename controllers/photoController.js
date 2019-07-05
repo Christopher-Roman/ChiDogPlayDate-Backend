@@ -8,6 +8,12 @@ const fs 		= require('fs')
 const { promisify } = require('util')
 const unlinkAsync 	= promisify(fs.unlink)
 
+//============================================================//
+//															  //
+//		Configuration for Multer File Uploader.               //
+//															  //
+//============================================================//
+
 const storage = multer.diskStorage({
 	destination: function(req, file, callback) {
 		callback(null, './uploads/');
@@ -30,6 +36,14 @@ const upload = multer({
 	},
 	fileFilter: fileFilter
 })
+
+//================== End of Multer Config ==============================//
+
+//============================================================//
+//															  //
+//		These are the routes for Photos specifically          //
+//															  //
+//============================================================//
 
 // Get Route for all user Photos
 router.get('/', async (req, res) => {
@@ -148,13 +162,11 @@ router.put('/:id/update', upload.single('photoUrl'), async (req, res, next) => {
 // Delete Route for Photos
 router.delete('/delete/:id', async (req, res, next) => {
 	try {
-		console.log(req.file);
 		const currentUser = await User.findOne({username: req.session.username});
 		currentUser.photo.splice(currentUser.photo.findIndex((photo) => {
 			return photo.id === req.params.id
 		}), 1);
 		const currentPhoto = await Photo.findById(req.params.id);
-		console.log(currentPhoto);
 		const deletedCommentIds = [];
 		if(currentPhoto.comment) {
 			for(let i = 0; i < currentPhoto.comment.length; i++) {
@@ -176,7 +188,55 @@ router.delete('/delete/:id', async (req, res, next) => {
 	}
 })
 
+//============================================================//
+//															  //
+//    These are the routes for Photo Comments specifically    //
+//															  //
+//============================================================//
 
+// Get Route for Photo Comments
+router.get('/:id/comment/:index', async (req, res, next) => {
+	if(req.session.logged) {
+		try {
+			const foundPhotoComment = await Comment.findById(req.params.index);
+			res.json({
+				status: 200,
+				data: foundPhotoComment
+			})
+		} catch {
+			next(err);
+		}
+	} else {
+		const forbidden = 'You must be logged in to perform this action.'
+		res.json({
+			status: 403,
+			data: forbidden
+		})
+	}
+})
 
+// Post Route for Photo Comments
+router.post('/:id/comment/new', upload.single('photo'), async (req, res, next) => {
+	if(req.session.logged) {
+		try {
+			const currentPhoto = await Photo.findById(req.params.id);
+			const commentToAdd = {};
+			commentToAdd.commentBody = req.body.commentBody;
+			commentToAdd.createdBy = req.session.username;
+			if(req.file) {
+				commentToAdd.photo = req.file.filepath
+			}
+			const newPhotoComment = await Comment.create(commentToAdd);
+			currentPhoto.comment.push(newPhotoComment);
+			await currentPhoto.save();
+			res.json({
+				status: 200,
+				data: currentPhoto
+			});
+		} catch(err) {
+			next(err)
+		}
+	}
+})
 
 module.exports = router
