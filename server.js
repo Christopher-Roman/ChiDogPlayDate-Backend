@@ -5,6 +5,7 @@ const bodyParser 		= require('body-parser');
 const methodOverride 	= require('method-override');
 const session 			= require('express-session');
 const cors 				= require('cors');
+const multer			= require('multer');
 
 require('dotenv').config({path:'./.env'});
 require('es6-promise').polyfill();

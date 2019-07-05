@@ -2,18 +2,16 @@ const express 	= require('express');
 const router 	= express.Router();
 const User 		= require('../models/user');
 const Photo 	= require('../models/photo');
-
 const multer	= require('multer');
 
-const storage 	= multer.diskStorage({
+const storage = multer.diskStorage({
 	destination: function(req, file, callback) {
 		callback(null, './uploads/');
 	},
 	filename: function(req, file, callback) {
-		callback(null, Date.now() + file.originalname);
+		callback(null, `${Date.now()} ${file.originalname}`);
 	}
 })
-
 const fileFilter = (req, file, callback) => {
 	if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'|| file.mimetype === 'image/jpg'|| file.mimetype === 'image/gif') {
 		callback(null, true)
@@ -21,8 +19,7 @@ const fileFilter = (req, file, callback) => {
 		callback(new Error('File type is not supported.'), false);
 	}
 }
-
-const upload 	= multer({
+const upload = multer({
 	storage: storage, 
 	limits: {
 		fileSize: 1024 * 1024 * 5
@@ -34,16 +31,17 @@ const upload 	= multer({
 
 router.get('/', async (req, res) => {
 	if(req.session.logged) {
-		const foundUser = await User.find({username: req.session.username});
-		if(foundUser === undefined || foundUser === null) {
+		const foundPhotos = await Photo.find({createdBy: req.session.username});
+		if(foundPhotos.length === 0) {
 			res.json({
 				status: 204,
 				data: 'No photos have been uploaded'
 			})
 		} else {
+			console.log(foundPhotos);
 			res.json({
 				status: 200,
-				data: foundUser
+				data: foundPhotos
 			})
 		}
 	}
@@ -60,6 +58,7 @@ router.post('/new', upload.single('photoUrl'), async (req, res, next) => {
 			const newPhoto = await Photo.create(photoEntry);
 			const currentUser = await User.findOne({username: req.session.username});
 			currentUser.photo.push(newPhoto);
+			await currentUser.save()
 			res.json({
 				status: 200,
 				data: newPhoto
