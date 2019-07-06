@@ -160,7 +160,7 @@ router.put('/:id/update', upload.single('photoUrl'), async (req, res, next) => {
 })
 
 // Delete Route for Photos
-router.delete('/delete/:id', async (req, res, next) => {
+router.delete('/:id/delete', async (req, res, next) => {
 	try {
 		const currentUser = await User.findOne({username: req.session.username});
 		currentUser.photo.splice(currentUser.photo.findIndex((photo) => {
@@ -286,4 +286,30 @@ router.put('/:id/comment/:index/update', upload.single('photo'), async (req, res
 		})
 	}
 })
+
+// Delete Route for Photo Comments
+router.delete('/:id/comment/:index/delete', async (req, res, next) => {
+	try {
+		const currentPhoto = await Photo.findById(req.params.id);
+		currentPhoto.comment.splice(currentPhoto.comment.findIndex((comment) => {
+			return comment.id === req.params.index
+		}), 1);
+		await currentPhoto.save();
+
+		const currentComment = await Comment.findById(req.params.index);
+		if(currentComment.photo) {
+			await unlinkAsync(currentComment.photo)
+		}
+
+		const commentToDelete = await Comment.findByIdAndDelete(req.params.index);
+		res.json({
+			status: 200,
+			data: currentPhoto
+		})
+	} catch(err) {
+		next(err);
+	}
+})
+
+
 module.exports = router
