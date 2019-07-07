@@ -1,8 +1,44 @@
-const express 	= require('express');
-const router 	= express.Router();
-const User 		= require('../models/user');
-const Post 		= require('../models/post');
-const Comment 	= require('../models/comment');
+const express 		= require('express');
+const router 		= express.Router();
+const User 			= require('../models/user');
+const Post 			= require('../models/post');
+const Comment 		= require('../models/comment');
+const multer		= require('multer');
+const fs 			= require('fs')
+const { promisify } = require('util')
+const unlinkAsync 	= promisify(fs.unlink)
+
+
+//============================================================//
+//															  //
+//		Configuration for Multer File Uploader.               //
+//															  //
+//============================================================//
+
+const storage = multer.diskStorage({
+	destination: function(req, file, callback) {
+		callback(null, './uploads/');
+	},
+	filename: function(req, file, callback) {
+		callback(null, `${file.originalname} - ${Date.now()}`);
+	}
+})
+const fileFilter = (req, file, callback) => {
+	if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'|| file.mimetype === 'image/jpg'|| file.mimetype === 'image/gif') {
+		callback(null, true)
+	} else {
+		callback(new Error('File type is not supported.'), false);
+	}
+}
+const upload = multer({
+	storage: storage, 
+	limits: {
+		fileSize: 1024 * 1024 * 5
+	},
+	fileFilter: fileFilter
+})
+
+//================== End of Multer Config ==============================//
 
 //============================================================//
 //															  //
@@ -159,15 +195,15 @@ router.delete('/delete/:id', async (req, res, next) => {
 
 // Post Route for Comments
 
-router.post('/:id/comment/new', async (req, res, next) => {
+router.post('/:id/comment/new', upload.single('photo'), async (req, res, next) => {
 	if(req.session.logged) {
 		try {
 			const foundPost = await Post.findById(req.params.id);
 			const commentToAdd = {}
 			commentToAdd.commentBody = req.body.commentBody;
 			commentToAdd.createdBy = req.session.username;
-			if(req.body.photo != "") {
-				commentToAdd.photo = req.body.photo
+			if(req.file) {
+				commentToAdd.photo = req.file.path
 			} else {
 				commentToAdd.photo = null
 			}
@@ -192,17 +228,20 @@ router.post('/:id/comment/new', async (req, res, next) => {
 
 
 // Put Route for Comments
-router.put('/:id/comment/:index/edit', async (req, res, next) => {
+router.put('/:id/comment/:index/edit', upload.single('photo'), async (req, res, next) => {
 	try {
 		const currentComment = await Comment.findById(req.params.index)
 		const updatedComment = {}
 		updatedComment.commentBody = req.body.commentBody;
-		if(req.body.photo === "") {
-			updatedComment.photo = null
-		} else if(req.body.photo === currentComment.photo) {
-			updatedComment.photo = currentComment.photo
+		if(!req.file) {
+			if(!currentComment.photo) {
+				updatedComment.photo = null
+			} else {
+				updatedComment.photo = currentComment.photo
+			}
 		} else {
-			updatedComment.photo = req.body.photo
+			await unlinkAsync(currentComment.photo)
+			updatedComment.photo = req.file.path
 		}
 
 		const commentToUpdate = await Comment.findByIdAndUpdate(req.params.index, updatedComment, {new: true});
@@ -224,11 +263,15 @@ router.put('/:id/comment/:index/edit', async (req, res, next) => {
 // Delete Route for Comments
 router.delete('/:id/comment/:index/delete', async (req, res, next) => {
 	try {
-		const deletedComment = await Comment.findByIdAndRemove(req.params.index);
+		const currentComment = await Comment.findById(req.params.index)
+		if(currentComment.photo) {
+			await unlinkAsync(currentComment.photo)
+		}
 		const currentPost = await Post.findById(req.params.id);
 		currentPost.comment.splice(currentPost.comment.findIndex((comment) => {
 			return comment.id === req.params.index
 		}), 1);
+		const deletedComment = await Comment.findByIdAndRemove(req.params.index);
 		await currentPost.save()
 		res.json({
 			status: 200,

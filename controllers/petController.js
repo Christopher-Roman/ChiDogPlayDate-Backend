@@ -1,7 +1,43 @@
-const express 	= require('express');
-const router 	= express.Router();
-const User 		= require('../models/user');
-const Pet 		= require('../models/pet');
+const express 		= require('express');
+const router 		= express.Router();
+const User 			= require('../models/user');
+const Pet 			= require('../models/pet');
+const multer		= require('multer');
+const fs 			= require('fs')
+const { promisify } = require('util')
+const unlinkAsync 	= promisify(fs.unlink)
+
+
+//============================================================//
+//															  //
+//		Configuration for Multer File Uploader.               //
+//															  //
+//============================================================//
+
+const storage = multer.diskStorage({
+	destination: function(req, file, callback) {
+		callback(null, './uploads/');
+	},
+	filename: function(req, file, callback) {
+		callback(null, `${file.originalname} - ${Date.now()}`);
+	}
+})
+const fileFilter = (req, file, callback) => {
+	if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'|| file.mimetype === 'image/jpg'|| file.mimetype === 'image/gif') {
+		callback(null, true)
+	} else {
+		callback(new Error('File type is not supported.'), false);
+	}
+}
+const upload = multer({
+	storage: storage, 
+	limits: {
+		fileSize: 1024 * 1024 * 5
+	},
+	fileFilter: fileFilter
+})
+
+//================== End of Multer Config ==============================//
 
 // Pet Get Route for all pets
 
@@ -25,7 +61,7 @@ router.get('/', async (req, res) => {
 // Pet Get Route for specific pet
 router.get('/:id', async (req, res) => {
 	if(req.session.logged) {
-		const noPets = 'There are no pets list under that ID'
+		const noPets = 'There are no pets listed under that ID'
 		try {
 			const foundPet = await Pet.findById(req.params.id);
 			if(!foundPet) {
@@ -49,7 +85,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // Pet Post Route
-router.post('/new', async (req, res) => {
+router.post('/new',upload.single('petPhoto'), async (req, res) => {
 	if(req.session.logged) {
 		try {
 			const petEntry = {};
@@ -68,6 +104,10 @@ router.post('/new', async (req, res) => {
 			petEntry.owner = req.session.username;
 			petEntry.bio = req.body.bio;
 			petEntry.sex = req.body.sex;
+
+			if(req.file) {
+				petEntry.petPhoto = req.file.path
+			}
 
 			const newPet = await Pet.create(petEntry);
 			const foundUser = await User.findOne({username: req.session.username})
@@ -240,6 +280,16 @@ router.put('/:id/update', async (req, res, next) => {
 				}
 			} else {
 				currentPet.sex = req.body.sex
+			}
+
+			if(!req.file) {
+				if(!currentPet.petPhoto) {
+					updatedPet.petPhoto = null;
+				} else {
+					updatedPet.petPhoto = currentPet.petPhoto
+				}
+			} else {
+				updatedPet.petPhoto = req.file.path
 			}
 
 			updatedPet._id = currentPet._id;

@@ -98,7 +98,7 @@ router.post('/new', upload.single('photoUrl'), async (req, res, next) => {
 			photoEntry.photoUrl = req.file.path;
 			photoEntry.createdBy = req.session.username;
 			photoEntry.description = req.body.description;
-			photoEntry.fileName = req.file.filename
+			photoEntry.fileName = req.file.path
 
 			const newPhoto = await Photo.create(photoEntry);
 			const currentUser = await User.findOne({username: req.session.username});
@@ -224,7 +224,7 @@ router.post('/:id/comment/new', upload.single('photo'), async (req, res, next) =
 			commentToAdd.commentBody = req.body.commentBody;
 			commentToAdd.createdBy = req.session.username;
 			if(req.file) {
-				commentToAdd.photo = req.file.filepath
+				commentToAdd.photo = req.file.path
 			}
 			const newPhotoComment = await Comment.create(commentToAdd);
 			currentPhoto.comment.push(newPhotoComment);
