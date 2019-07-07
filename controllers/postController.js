@@ -193,6 +193,25 @@ router.delete('/delete/:id', async (req, res, next) => {
 //============================================================//
 
 
+router.get('/:id/comment/:index', async (req, res, next) => {
+	if(req.session.logged) {
+		try {
+			const foundPostComment = await Comment.findById(req.params.index);
+			res.json({
+				status: 200,
+				data: foundPostComment
+			})
+		} catch(err) {
+			next(err)
+		}
+	} else {
+		res.json({
+			status: 403,
+			data: forbidden
+		})
+	}
+})
+
 // Post Route for Comments
 
 router.post('/:id/comment/new', upload.single('photo'), async (req, res, next) => {
