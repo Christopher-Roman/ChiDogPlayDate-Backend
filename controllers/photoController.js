@@ -58,7 +58,6 @@ router.get('/', async (req, res) => {
 				data: 'No photos have been uploaded'
 			})
 		} else {
-			console.log(foundPhotos);
 			res.json({
 				status: 200,
 				data: foundPhotos
@@ -87,6 +86,11 @@ router.get('/:id', async (req, res, next) => {
 		} catch(err) {
 			next(err)
 		}
+	} else {
+		res.json({
+			status: 403,
+			data: forbidden
+		})
 	}
 })
 
@@ -207,7 +211,6 @@ router.get('/:id/comment/:index', async (req, res, next) => {
 			next(err);
 		}
 	} else {
-		const forbidden = 'You must be logged in to perform this action.'
 		res.json({
 			status: 403,
 			data: forbidden
@@ -236,6 +239,11 @@ router.post('/:id/comment/new', upload.single('photo'), async (req, res, next) =
 		} catch(err) {
 			next(err)
 		}
+	} else {
+		res.json({
+			status: 403,
+			data: forbidden
+		})
 	}
 })
 
@@ -246,7 +254,6 @@ router.put('/:id/comment/:index/update', upload.single('photo'), async (req, res
 			const currentPhoto = await Photo.findById(req.params.id);
 			const commentToUpdate = await Comment.findById(req.params.index);
 			const updatedCommentInfo = {};
-			console.log(commentToUpdate);
 			if(!req.body.commentBody) {
 				updatedCommentInfo.commentBody = commentToUpdate.commentBody;
 			} else {

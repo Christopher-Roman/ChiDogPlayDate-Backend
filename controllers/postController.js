@@ -8,6 +8,8 @@ const fs 			= require('fs')
 const { promisify } = require('util')
 const unlinkAsync 	= promisify(fs.unlink)
 
+// 403 response
+const forbidden = 'You must be logged in to perform this action.'
 
 //============================================================//
 //															  //
@@ -239,8 +241,8 @@ router.post('/:id/comment/new', upload.single('photo'), async (req, res, next) =
 		}
 	} else {
 		res.json({
-			status: 400,
-			data: 'You must be logged in to perform this action'
+			status: 403,
+			data: forbidden
 		})
 	}
 })
