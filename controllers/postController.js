@@ -228,9 +228,10 @@ router.post('/:id/comment/new', upload.single('photo'), async (req, res, next) =
 
 
 // Put Route for Comments
-router.put('/:id/comment/:index/edit', upload.single('photo'), async (req, res, next) => {
+router.put('/:id/comment/:index/update', upload.single('photo'), async (req, res, next) => {
 	try {
-		const currentComment = await Comment.findById(req.params.index)
+		const currentPost = await Post.findById(req.params.id);
+		const currentComment = await Comment.findById(req.params.index);
 		const updatedComment = {}
 		updatedComment.commentBody = req.body.commentBody;
 		if(!req.file) {
