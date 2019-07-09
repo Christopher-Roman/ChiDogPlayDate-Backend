@@ -108,6 +108,7 @@ router.post('/new', upload.single('photoUrl'), async (req, res, next) => {
 			const currentUser = await User.findOne({username: req.session.username});
 			currentUser.photo.push(newPhoto);
 			await currentUser.save()
+			console.log(newPhoto);
 			res.json({
 				status: 200,
 				data: newPhoto

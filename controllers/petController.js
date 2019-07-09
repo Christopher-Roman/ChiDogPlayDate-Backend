@@ -104,10 +104,7 @@ router.post('/new',upload.single('petPhoto'), async (req, res) => {
 			petEntry.owner = req.session.username;
 			petEntry.bio = req.body.bio;
 			petEntry.sex = req.body.sex;
-
-			if(req.file) {
-				petEntry.petPhoto = req.file.path
-			}
+			petEntry.petPhoto = req.file.path
 
 			const newPet = await Pet.create(petEntry);
 			const foundUser = await User.findOne({username: req.session.username})
@@ -289,6 +286,7 @@ router.put('/:id/update', async (req, res, next) => {
 					updatedPet.petPhoto = currentPet.petPhoto
 				}
 			} else {
+				await unlinkAsync(currentPet.petPhoto)
 				updatedPet.petPhoto = req.file.path
 			}
 
@@ -314,7 +312,7 @@ router.put('/:id/update', async (req, res, next) => {
 })
 
 // Delete Route for Pets
-router.delete('/delete/:id', async (req, res, next) => {
+router.delete('/:id/delete', async (req, res, next) => {
 	try {
 		const currentUser = await User.findOne({username: req.session.username});
 		currentUser.pet.splice(currentUser.pet.findIndex((pet) => {
@@ -322,6 +320,7 @@ router.delete('/delete/:id', async (req, res, next) => {
 		}), 1)
 		await currentUser.save()
 		const deletedPet = await Pet.findByIdAndDelete(req.params.id);
+		await unlinkAsync(deletedPet.petPhoto)
 		res.json({
 			status: 200,
 			data: currentUser
