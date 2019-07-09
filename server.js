@@ -21,6 +21,7 @@ const userController = require('./controllers/userController');
 const petController = require('./controllers/petController');
 const postController = require('./controllers/postController');
 const photoController = require('./controllers/photoController');
+const apiController = require('./controllers/apiController');
 
 require('./db/db');
 
@@ -36,7 +37,7 @@ app.use(methodOverride('_method'));
 app.use('/uploads', express.static('uploads'))
 
 const corsOptions = {
-	origin: process.env.HOST,
+	origin: [process.env.HOST, process.env.API],
 	credentials: true,
 	optionsSuccessStatus: 200
 };
@@ -47,6 +48,7 @@ app.use('/users', userController);
 app.use('/pet', petController);
 app.use('/post', postController);
 app.use('/photo', photoController);
+app.use('/parks', apiController);
 
 app.listen(process.env.PORT, () => {
 	console.log('Server is up and running.');
