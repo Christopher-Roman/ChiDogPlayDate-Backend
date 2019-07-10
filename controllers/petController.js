@@ -124,9 +124,10 @@ router.post('/new',upload.single('petPhoto'), async (req, res) => {
 })
 
 // Pet Put Route 
-router.put('/:id/update', async (req, res, next) => {
+router.put('/:id/update', upload.single('petPhoto'), async (req, res, next) => {
 	if(req.session.logged) {
 		try {
+			console.log(req.file);
 			const currentPet = await Pet.findById(req.params.id);
 			const updatedPet = {};
 			// Logic to handle firstname change
@@ -258,7 +259,7 @@ router.put('/:id/update', async (req, res, next) => {
 			}
 			
 			// Logic to handle bio change
-			if(!req.params.bio) {
+			if(!req.body.bio) {
 				if(!currentPet.bio) {
 					updatedPet.bio = `Tell us a bit about, ${currentPet.firstName}.`
 				} else {
@@ -269,11 +270,11 @@ router.put('/:id/update', async (req, res, next) => {
 			}
 			
 			// Logic to handle change to sex
-			if(!req.params.sex) {
+			if(!req.body.sex) {
 				if(!currentPet.sex) {
 					updatedPet.sex = `Is ${currentPet.firstName} female or male?`
 				} else {
-					updatedPet.sex = req.body.sex;
+					updatedPet.sex = currentPet.sex;
 				}
 			} else {
 				currentPet.sex = req.body.sex
@@ -298,7 +299,7 @@ router.put('/:id/update', async (req, res, next) => {
 			const foundUser = await User.find({username: req.session.username});
 			const updatedUser = foundUser[0];
 			updatedUser.pet.splice(updatedUser.pet.findIndex((pet) => {
-				return pet.id === petToUpdate.id
+				return pet.id === req.params.id
 			}), 1, petToUpdate);
 			await updatedUser.save()
 			res.json({
