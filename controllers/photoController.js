@@ -108,10 +108,9 @@ router.post('/new', upload.single('photoUrl'), async (req, res, next) => {
 			const currentUser = await User.findOne({username: req.session.username});
 			currentUser.photo.push(newPhoto);
 			await currentUser.save()
-			console.log(newPhoto);
 			res.json({
 				status: 200,
-				data: newPhoto
+				data: currentUser
 			})
 		} catch(err) {
 			next(err)
@@ -151,7 +150,7 @@ router.put('/:id/update', upload.single('photoUrl'), async (req, res, next) => {
 			await currentUser.save()
 			res.json({
 				status: 200,
-				data: photoWithUpdates
+				data: currentUser
 			})
 		} catch(err) {
 			next(err)
