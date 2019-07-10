@@ -102,7 +102,7 @@ router.post('/new', upload.single('photoUrl'), async (req, res, next) => {
 			photoEntry.photoUrl = req.file.path;
 			photoEntry.createdBy = req.session.username;
 			photoEntry.description = req.body.description;
-			photoEntry.fileName = req.file.path
+			photoEntry.fileName = req.file.name
 
 			const newPhoto = await Photo.create(photoEntry);
 			const currentUser = await User.findOne({username: req.session.username});
