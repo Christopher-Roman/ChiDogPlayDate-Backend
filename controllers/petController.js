@@ -127,7 +127,6 @@ router.post('/new',upload.single('petPhoto'), async (req, res) => {
 router.put('/:id/update', upload.single('petPhoto'), async (req, res, next) => {
 	if(req.session.logged) {
 		try {
-			console.log(req.file);
 			const currentPet = await Pet.findById(req.params.id);
 			const updatedPet = {};
 			// Logic to handle firstname change
@@ -139,143 +138,91 @@ router.put('/:id/update', upload.single('petPhoto'), async (req, res, next) => {
 			
 			// Logic to handle middleName change
 			if(!req.body.middleName) {
-				if(!currentPet.middleName) {
-					updatedPet.middleName = `Does ${currentPet.firstName} have a middle name?`
-				} else {
-					updatedPet.middleName = currentPet.middleName;
-				}
+				updatedPet.middleName = currentPet.middleName;
 			} else {
 				updatedPet.middleName = req.body.middleName;
 			} 
 			
 			// Logic to handle lastName change
 			if(!req.body.lastName) {
-				if(!currentPet.lastName) {
-					updatedPet.lastName = `Does ${currentPet.firstName} have a last name?`
-				} else {
-					updatedPet.lastName = currentPet.lastName;
-				}
+				updatedPet.lastName = currentPet.lastName;
 			} else {
 				updatedPet.lastName = req.body.lastName;
 			}
 
 			// Logic to handle weight change
 			if(!req.body.weight) {
-				if(!currentPet.weight) {
-					updatedPet.weight = `How much does ${currentPet.firstName} weigh?`
-				} else {
-					updatedPet.weight = currentPet.weight;
-				}
+				updatedPet.weight = currentPet.weight;
 			} else {
 				updatedPet.weight = req.body.weight;
 			}
 			
 			// Logic to handle age change 
 			if(!req.body.age) {
-				if(!currentPet.age) {
-					updatedPet.age = `How old is ${currentPet.firstName}?`
-				} else {
-					updatedPet.age = currentPet.age;
-				}
+				updatedPet.age = currentPet.age;
 			} else {
 				updatedPet.age = req.body.age;
 			}
 			
 			// Logic to handle peopleSkills change
 			if(!req.body.peopleSkills) {
-				if(!currentPet.peopleSkills) {
-					updatedPet.peopleSkills = `How is ${currentPet.firstName} around people?`
-				} else {
-					updatedPet.peopleSkills = currentPet.peopleSkills;
-				}
+				updatedPet.peopleSkills = currentPet.peopleSkills;
 			} else {
 				updatedPet.peopleSkills = req.body.peopleSkills;
 			}
 			
 			// Logic to handle dogSkills change
 			if(!req.body.dogSkills) {
-				if(!currentPet.dogSkills) {
-					updatedPet.dogSkills = `How is ${currentPet.firstName} with other dogs.`
-				} else {
-					updatedPet.dogSkills = currentPet.dogSkills;
-				}
+				updatedPet.dogSkills = currentPet.dogSkills;
 			} else {
 				updatedPet.dogSkills = req.body.dogSkills;
 			}
 			
 			// Logic to handle favTreat change
 			if(!req.body.favTreat) {
-				if(!currentPet.favTreat) {
-					updatedPet.favTreat = `What is ${currentPet.firstName}'s favorite treat?`
-				} else {
-					updatedPet.favTreat = currentPet.favTreat;
-				}
+				updatedPet.favTreat = currentPet.favTreat;
 			} else {
 				updatedPet.favTreat = req.body.favTreat;
 			}
 			
 			// Logic to handle favToy change
 			if(!req.body.favToy) {
-				if(!currentPet.favToy) {
-					updatedPet.favToy = `What is ${currentPet.firstName}'s favorite toy?`
-				} else {
-					updatedPet.favToy = currentPet.favToy;
-				}
+				updatedPet.favToy = currentPet.favToy;
 			} else {
 				updatedPet.favToy = req.body.favToy;
 			}
 			
 			// Logic to handle favPlay change
 			if(!req.body.favPlay) {
-				if(!currentPet.favPlay) {
-					updatedPet.favPlay = `What is ${currentPet.firstName}'s favorite game?`
-				} else {
-					updatedPet.favPlay = currentPet.favPlay;
-				}
+				updatedPet.favPlay = currentPet.favPlay;
 			} else {
 				updatedPet.favPlay = req.body.favPlay;
 			}
 			
 			// Logic to handle breed change
 			if(!req.body.breed) {
-				if(!currentPet.breed) {
-					updatedPet.breed = `What breed is ${currentPet.firstName}?`
-				} else {
-					updatedPet.breed = currentPet.breed;
-				}
+				updatedPet.breed = currentPet.breed;
 			} else {
 				updatedPet.breed = req.body.breed;
 			}
 			
 			// Logic to handle fixed change
 			if(!req.body.fixed) {
-				if(!currentPet.fixed) {
-					updatedPet.fixed = `Is ${currentPet.firstName} spayed or neutered?`
-				} else {
-					updatedPet.fixed = currentPet.fixed;
-				}
+				pdatedPet.fixed = currentPet.fixed;
 			} else {
 				updatedPet.fixed = req.body.fixed;
 			}
 			
 			// Logic to handle bio change
 			if(!req.body.bio) {
-				if(!currentPet.bio) {
-					updatedPet.bio = `Tell us a bit about, ${currentPet.firstName}.`
-				} else {
-					updatedPet.bio = currentPet.bio;
-				}
+				updatedPet.bio = currentPet.bio;
 			} else {
 				updatedPet.bio = req.body.bio;
 			}
 			
 			// Logic to handle change to sex
 			if(!req.body.sex) {
-				if(!currentPet.sex) {
-					updatedPet.sex = `Is ${currentPet.firstName} female or male?`
-				} else {
-					updatedPet.sex = currentPet.sex;
-				}
+				updatedPet.sex = currentPet.sex;
 			} else {
 				currentPet.sex = req.body.sex
 			}
