@@ -51,8 +51,8 @@ const upload = multer({
 // Get Route for all user Photos
 router.get('/', async (req, res) => {
 	if(req.session.logged) {
-		const foundPhotos = await Photo.find({createdBy: req.session.username});
-		if(foundPhotos.length === 0) {
+		const foundUser = await User.findOne({username: req.session.username});
+		if(!foundUser.photo) {
 			res.json({
 				status: 204,
 				data: 'No photos have been uploaded'
@@ -60,7 +60,7 @@ router.get('/', async (req, res) => {
 		} else {
 			res.json({
 				status: 200,
-				data: foundPhotos
+				data: foundUser
 			})
 		}
 	}
@@ -171,10 +171,11 @@ router.delete('/:id/delete', async (req, res, next) => {
 			return photo.id === req.params.id
 		}), 1);
 		const currentPhoto = await Photo.findById(req.params.id);
+		const photoComments = await Comment.find({photoId: req.params.id})
 		const deletedCommentIds = [];
 		if(currentPhoto.comment) {
-			for(let i = 0; i < currentPhoto.comment.length; i++) {
-				deletedCommentIds.push(currentPhoto.comment[i].id)
+			for(let i = 0; i < photoComments.length; i++) {
+				deletedCommentIds.push(photoComments[i].id)
 			}
 		}
 		const deletePhoto = await Photo.findByIdAndDelete(req.params.id);
@@ -198,16 +199,16 @@ router.delete('/:id/delete', async (req, res, next) => {
 //															  //
 //============================================================//
 
-// Get Route for Photo Comments
-router.get('/:id/comment/:index', async (req, res, next) => {
+// Get Route for Photo Comment
+router.get('/:id/comment', async (req, res, next) => {
 	if(req.session.logged) {
 		try {
-			const foundPhotoComment = await Comment.findById(req.params.index);
+			const foundPhotoComments = await Comment.find({photoId: req.params.id});
 			res.json({
 				status: 200,
-				data: foundPhotoComment
+				data: foundPhotoComments
 			})
-		} catch {
+		} catch(err) {
 			next(err);
 		}
 	} else {
@@ -226,6 +227,7 @@ router.post('/:id/comment/new', upload.single('photo'), async (req, res, next) =
 			const commentToAdd = {};
 			commentToAdd.commentBody = req.body.commentBody;
 			commentToAdd.createdBy = req.session.username;
+			commentToAdd.photoId = req.params.id;
 			if(req.file) {
 				commentToAdd.photo = req.file.path
 			}

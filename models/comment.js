@@ -13,7 +13,8 @@ const commentSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
-	photo: String
+	photo: String,
+	photoId: String
 })
 
 module.exports = mongoose.model('Comment', commentSchema)
