@@ -6,6 +6,61 @@ const Post 		= require('../models/post');
 const Photo 	= require('../models/photo');
 const Comment 	= require('../models/comment')
 const bcrypt 	= require('bcrypt')
+const multer	= require('multer');
+const fs 		= require('fs')
+const { promisify } = require('util')
+const unlinkAsync 	= promisify(fs.unlink)
+
+//============================================================//
+//															  //
+//		Configuration for Multer File Uploader.               //
+//															  //
+//============================================================//
+
+const storage = multer.diskStorage({
+	destination: function(req, file, callback) {
+		callback(null, './uploads/');
+	},
+	filename: function(req, file, callback) {
+		callback(null, `${file.originalname} - ${Date.now()}`);
+	}
+})
+const fileFilter = (req, file, callback) => {
+	if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'|| file.mimetype === 'image/jpg'|| file.mimetype === 'image/gif') {
+		callback(null, true)
+	} else {
+		callback(new Error('File type is not supported.'), false);
+	}
+}
+const upload = multer({
+	storage: storage, 
+	limits: {
+		fileSize: 1024 * 1024 * 5
+	},
+	fileFilter: fileFilter
+})
+
+//================== End of Multer Config ==============================//
+
+// Get Route for specific user
+router.get('/', async (req, res, next) => {
+	try {
+		const foundUser = await User.findOne({username: req.session.username})
+		if(foundUser) {
+			res.json({
+				status: 200,
+				data: foundUser
+			})
+		} else {
+			res.json({
+				status: 204,
+				data: 'No user was found'
+			})
+		}	
+	} catch(err) {
+		next(err)
+	}
+})
 
 // Register Post Route for User Creation
 router.post('/register', async (req, res) => {
@@ -77,7 +132,7 @@ router.get('/logout', (req, res, next) => {
 })
 
 // Put Route for users
-router.put('/:id/update', async (req, res) => {
+router.put('/:id/update', upload.single('userPhoto'), async (req, res) => {
 	if(req.session.logged) {
 		try {
 			const currentUser = await User.findById(req.params.id)
@@ -113,14 +168,15 @@ router.put('/:id/update', async (req, res) => {
 			}
 
 			// Logic to handle Photo Changes
-			if(!req.body.userPhoto){
+			if(!req.file){
 				if(!currentUser.userPhoto) {
-					newUserInfo.userPhoto = 'You should add a photo!'
+					newUserInfo.userPhoto = null
 				} else {
 					newUserInfo.userPhoto = currentUser.userPhoto;
 				}
 			} else {
-				newUserInfo.userPhoto = req.body.userPhoto;
+				await unlinkAsync(currentUser.userPhoto)
+				newUserInfo.userPhoto = req.file.path
 			}
 			
 			//Logic to handle Address Changes
