@@ -52,10 +52,10 @@ const upload = multer({
 router.get('/', async (req, res) => {
 	if(req.session.logged) {
 		const foundUser = await User.find({username: req.session.username})
-		if(foundUser === undefined || foundUser === null){
+		if(!foundUser){
 			res.json({
 				status: 204,
-				data: 'No budgets have been created'
+				data: 'No Posts have been created'
 			})
 		} else {
 			res.json({

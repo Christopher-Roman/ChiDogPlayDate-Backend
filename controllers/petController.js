@@ -112,7 +112,7 @@ router.post('/new',upload.single('petPhoto'), async (req, res) => {
 			await foundUser.save()
 			res.json({
 				status: 200,
-				data: newPet
+				data: foundUser
 			})
 		} catch(err) {
 			res.json({
