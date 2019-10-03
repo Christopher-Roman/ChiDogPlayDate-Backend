@@ -51,8 +51,8 @@ const upload = multer({
 // Post Get Route for all posts
 router.get('/', async (req, res) => {
 	if(req.session.logged) {
-		const foundUser = await User.find({username: req.session.username})
-		if(!foundUser){
+		const allPosts = await Post.find();
+		if(!allPosts){
 			res.json({
 				status: 204,
 				data: 'No Posts have been created'
@@ -60,7 +60,7 @@ router.get('/', async (req, res) => {
 		} else {
 			res.json({
 				status: 200,
-				data: foundUser
+				data: allPosts
 			})
 		}
 	}
