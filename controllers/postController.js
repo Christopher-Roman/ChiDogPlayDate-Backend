@@ -52,6 +52,7 @@ const upload = multer({
 router.get('/', async (req, res) => {
 	if(req.session.logged) {
 		const allPosts = await Post.find();
+		console.log(allPosts);
 		if(!allPosts){
 			res.json({
 				status: 204,
