@@ -22,6 +22,7 @@ const petController = require('./controllers/petController');
 const postController = require('./controllers/postController');
 const photoController = require('./controllers/photoController');
 const apiController = require('./controllers/apiController');
+const searchController = require('./controllers/searchController')
 
 require('./db/db');
 
@@ -49,6 +50,7 @@ app.use('/pet', petController);
 app.use('/post', postController);
 app.use('/photo', photoController);
 app.use('/parks', apiController);
+app.use('/search', searchController)
 
 app.listen(process.env.PORT, () => {
 	console.log('Server is up and running.');
