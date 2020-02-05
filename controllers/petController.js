@@ -249,6 +249,7 @@ router.put('/:id/update', upload.single('petPhoto'), async (req, res, next) => {
 				return pet.id === req.params.id
 			}), 1, petToUpdate);
 			await updatedUser.save()
+			const editedPet = await Pet.find({_id: req.params.id})
 			res.json({
 				status: 200,
 				data: updatedUser
