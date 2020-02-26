@@ -126,102 +126,104 @@ router.post('/new',upload.single('petPhoto'), async (req, res) => {
 // Pet Put Route 
 router.put('/:id/update', upload.single('petPhoto'), async (req, res, next) => {
 	if(req.session.logged) {
+		console.log(req.params.id);
 		try {
 			const currentPet = await Pet.findById(req.params.id);
 			const updatedPet = {};
+			console.log(req.body);
 			// Logic to handle firstname change
-			if(!req.body.firstName) {
-				updatedPet.firstName = currentPet.firstName;
-			} else {
+			if(!req.body.firstName === undefined) {
 				updatedPet.firstName = req.body.firstName;	
+			} else {
+				updatedPet.firstName = currentPet.firstName;
 			}
 			
 			// Logic to handle middleName change
-			if(!req.body.middleName) {
+			if(req.body.middleName === undefined) {
 				updatedPet.middleName = currentPet.middleName;
 			} else {
 				updatedPet.middleName = req.body.middleName;
 			} 
 			
 			// Logic to handle lastName change
-			if(!req.body.lastName) {
+			if(req.body.lastName === undefined) {
 				updatedPet.lastName = currentPet.lastName;
 			} else {
 				updatedPet.lastName = req.body.lastName;
 			}
 
 			// Logic to handle weight change
-			if(!req.body.weight) {
+			if(req.body.weight === undefined) {
 				updatedPet.weight = currentPet.weight;
 			} else {
 				updatedPet.weight = req.body.weight;
 			}
 			
 			// Logic to handle age change 
-			if(!req.body.age) {
+			if(req.body.age === undefined) {
 				updatedPet.age = currentPet.age;
 			} else {
 				updatedPet.age = req.body.age;
 			}
 			
 			// Logic to handle peopleSkills change
-			if(!req.body.peopleSkills) {
+			if(req.body.peopleSkills === undefined) {
 				updatedPet.peopleSkills = currentPet.peopleSkills;
 			} else {
 				updatedPet.peopleSkills = req.body.peopleSkills;
 			}
 			
 			// Logic to handle dogSkills change
-			if(!req.body.dogSkills) {
+			if(req.body.dogSkills === undefined) {
 				updatedPet.dogSkills = currentPet.dogSkills;
 			} else {
 				updatedPet.dogSkills = req.body.dogSkills;
 			}
 			
 			// Logic to handle favTreat change
-			if(!req.body.favTreat) {
+			if(req.body.favTreat === undefined) {
 				updatedPet.favTreat = currentPet.favTreat;
 			} else {
 				updatedPet.favTreat = req.body.favTreat;
 			}
 			
 			// Logic to handle favToy change
-			if(!req.body.favToy) {
+			if(req.body.favToy === undefined) {
 				updatedPet.favToy = currentPet.favToy;
 			} else {
 				updatedPet.favToy = req.body.favToy;
 			}
 			
 			// Logic to handle favPlay change
-			if(!req.body.favPlay) {
+			if(req.body.favPlay === undefined) {
 				updatedPet.favPlay = currentPet.favPlay;
 			} else {
 				updatedPet.favPlay = req.body.favPlay;
 			}
 			
 			// Logic to handle breed change
-			if(!req.body.breed) {
+			if(req.body.breed === undefined) {
 				updatedPet.breed = currentPet.breed;
 			} else {
 				updatedPet.breed = req.body.breed;
 			}
 			
 			// Logic to handle fixed change
-			if(!req.body.fixed) {
+			if(req.body.fixed === undefined) {
 				pdatedPet.fixed = currentPet.fixed;
 			} else {
 				updatedPet.fixed = req.body.fixed;
 			}
 			
 			// Logic to handle bio change
-			if(!req.body.bio) {
+			if(req.body.bio === undefined) {
 				updatedPet.bio = currentPet.bio;
 			} else {
 				updatedPet.bio = req.body.bio;
 			}
 			
 			// Logic to handle change to sex
-			if(!req.body.sex) {
+			if(req.body.sex === undefined) {
 				updatedPet.sex = currentPet.sex;
 			} else {
 				currentPet.sex = req.body.sex
@@ -244,12 +246,14 @@ router.put('/:id/update', upload.single('petPhoto'), async (req, res, next) => {
 			const petToUpdate = await Pet.findByIdAndUpdate(req.params.id, updatedPet, {new: true});
 			await petToUpdate.save();
 			const foundUser = await User.find({username: req.session.username});
+			console.log(foundUser);
 			const updatedUser = foundUser[0];
 			updatedUser.pet.splice(updatedUser.pet.findIndex((pet) => {
 				return pet.id === req.params.id
 			}), 1, petToUpdate);
 			await updatedUser.save()
 			const editedPet = await Pet.find({_id: req.params.id})
+			console.log(petToUpdate);
 			res.json({
 				status: 200,
 				data: updatedUser
